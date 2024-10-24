@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace AaliyahAllie_ST10212542_PROGPART2
+namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 {
     /// <summary>
     /// Users need to either have an account or create an account to use the program further

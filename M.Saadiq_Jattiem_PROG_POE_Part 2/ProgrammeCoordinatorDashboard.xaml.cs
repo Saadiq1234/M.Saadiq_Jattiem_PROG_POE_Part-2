@@ -35,7 +35,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
         private List<Claim> GetClaimsFromDatabase()
         {
             List<Claim> claims = new List<Claim>();
-            string connectionString = "Data Source=hp820g4\\SQLEXPRESS;Initial Catalog=POE;Integrated Security=True;";
+            string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
             string query = "SELECT ClaimID, ClassTaught, TotalAmount, ClaimStatus FROM Claims";
 
             using (SqlConnection connection = new SqlConnection(connectionString))

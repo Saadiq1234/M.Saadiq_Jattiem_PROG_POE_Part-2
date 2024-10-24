@@ -40,7 +40,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             try
             {
                 // SQL connection string to  database
-                string connectionString = "Data Source=hp820g4\\SQLEXPRESS;Initial Catalog=POE;Integrated Security=True;";
+                string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {

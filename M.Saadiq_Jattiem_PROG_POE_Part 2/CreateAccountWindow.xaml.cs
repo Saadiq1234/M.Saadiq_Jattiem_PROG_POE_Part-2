@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Windows;
+using System;
+using System.Data.SqlClient;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 {
@@ -47,10 +39,10 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             try
             {
                 // Address of SQL server and database 
-                string connectionString = "Data Source=hp820g4\\SQLEXPRESS;Initial Catalog=POE;Integrated Security=True;";
+                string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
 
                 // Establish connection
-                using (SqlConnection con = new SqlConnection(connectionString))
+                using (var con = new SqlConnection(connectionString))
                 {
                     // Open Connection
                     con.Open();
