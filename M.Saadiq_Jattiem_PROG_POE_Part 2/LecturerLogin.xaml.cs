@@ -1,22 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Data.SqlClient;
+using System.Text;
+using System.Windows;
 
 namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 {
     /// <summary>
-    /// When a lecturer logs in, they will be directed to the Lecturer Dashboard window if their login is successful and they have an account
+    /// When a lecturer logs in, they will be directed to the Lecturer Dashboard window if their login is successful and they have an account.
     /// </summary>
     public partial class LecturerLogin : Window
     {
@@ -40,21 +30,24 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 
             try
             {
-                // SQL connection string to  database
-                string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
+                // Hash the entered password
+                string passwordHash = HashPassword(password);
+
+                // SQL connection string to the database
+                string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Encrypt=False;";
 
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
 
-                    // SQL query to check if the email and password hash match an entry in the AccountUser table
+                    // SQL query to check if the email and hashed password match an entry in the AccountUser table
                     string query = "SELECT COUNT(*) FROM AccountUser WHERE Email = @Email AND PasswordHash = @PasswordHash AND AccountType = 'Lecturer'";
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
                         // Use SQL parameters to prevent SQL injection attacks
                         command.Parameters.AddWithValue("@Email", email);
-                        command.Parameters.AddWithValue("@PasswordHash", password);  // Assuming password is stored as plain text (it should be hashed)
+                        command.Parameters.AddWithValue("@PasswordHash", passwordHash);  // Use hashed password
 
                         // Execute the query and get the number of matching entries
                         int count = (int)command.ExecuteScalar();
@@ -77,10 +70,33 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                     }
                 }
             }
+            catch (SqlException sqlEx)
+            {
+                // Handle SQL-related exceptions
+                MessageBox.Show("Database error: " + sqlEx.Message);
+            }
             catch (Exception ex)
             {
-                // Handle any exceptions that occur during the process
-                MessageBox.Show("Error: " + ex.Message);
+                // Handle any other exceptions that occur during the process
+                MessageBox.Show("An error occurred: " + ex.Message);
+            }
+        }
+
+        // Hash the password using SHA-256
+        private string HashPassword(string password)
+        {
+            using (var sha256Hash = System.Security.Cryptography.SHA256.Create())
+            {
+                // Compute the hash - returns byte array
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                // Convert byte array to a string
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));  // Convert each byte to hex
+                }
+                return builder.ToString();
             }
         }
     }

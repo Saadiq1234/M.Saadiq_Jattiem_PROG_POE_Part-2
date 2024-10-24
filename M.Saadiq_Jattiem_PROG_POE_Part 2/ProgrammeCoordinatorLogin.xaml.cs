@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Security.Cryptography; // Required for SHA256
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Data.SqlClient;
 
 namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 {
     /// <summary>
-    /// When coordinators are approved for login they will be taken to coordinator dashboard
+    /// When coordinators are approved for login they will be taken to the coordinator dashboard
     /// </summary>
     public partial class ProgrammeCoordinatorLogin : Window
     {
@@ -40,8 +31,12 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 
             try
             {
+                // Hash the entered password
+                string passwordHash = HashPassword(password);
+
                 // Connection string to the database
-                string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
+                string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Encrypt=True;TrustServerCertificate=True;";
+
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     // Open connection
@@ -53,7 +48,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                     {
                         // Add parameters for the email and password
                         command.Parameters.AddWithValue("@Email", email);
-                        command.Parameters.AddWithValue("@PasswordHash", password);  // Password should be hashed in a real app
+                        command.Parameters.AddWithValue("@PasswordHash", passwordHash);  // Use hashed password
 
                         // Execute the query
                         int count = (int)command.ExecuteScalar();
@@ -78,6 +73,23 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             catch (Exception ex)
             {
                 MessageBox.Show("Error: " + ex.Message);
+            }
+        }
+
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                // ComputeHash - returns byte array
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                // Convert byte array to a string
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    builder.Append(bytes[i].ToString("x2")); // Convert to hex string
+                }
+                return builder.ToString();
             }
         }
     }

@@ -1,17 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Data.SqlClient;
 
 namespace M.Saadiq_Jattiem_PROG_POE_Part_2
@@ -21,7 +11,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
     /// </summary>
     public partial class ViewClaims : Window
     {
-        private string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
+        private string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;";
 
         public ViewClaims()
         {
@@ -32,7 +22,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
         // Method to load claims into the ListView
         private void LoadClaims()
         {
-            string query = "SELECT ClaimID, ClassTaught, TotalAmount, ClaimStatus FROM Claims"; // Modify if necessary
+            string query = "SELECT ClaimsID, ClassTaught, ClaimTotalAmount, ClaimStatus FROM Claims"; // Modify if necessary
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -49,7 +39,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             if (ClaimsListView.SelectedItem != null)
             {
                 DataRowView selectedClaim = (DataRowView)ClaimsListView.SelectedItem;
-                int claimID = Convert.ToInt32(selectedClaim["ClaimID"]);
+                int claimID = Convert.ToInt32(selectedClaim["ClaimsID"]);
 
                 // Open an edit window (create a new window for editing)
                 EditClaim editClaimWindow = new EditClaim(claimID);
@@ -70,12 +60,12 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             if (ClaimsListView.SelectedItem != null)
             {
                 DataRowView selectedClaim = (DataRowView)ClaimsListView.SelectedItem;
-                int claimID = Convert.ToInt32(selectedClaim["ClaimID"]);
+                int claimsID = Convert.ToInt32(selectedClaim["ClaimsID"]);
 
                 // Confirm deletion
                 if (MessageBox.Show("Are you sure you want to delete this claim?", "Delete Claim", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
-                    DeleteClaim(claimID);
+                    DeleteClaim(claimsID);
                     LoadClaims(); // Reload claims after deletion
                 }
             }
@@ -88,7 +78,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
         // Method to delete a claim from the database
         private void DeleteClaim(int claimID)
         {
-            string query = "DELETE FROM Claims WHERE ClaimID = @ClaimID";
+            string query = "DELETE FROM Claims WHERE ClaimsID = @ClaimID";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {

@@ -1,24 +1,11 @@
-﻿using Microsoft.Win32;
+﻿using Microsoft.Win32; // Required for OpenFileDialog
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using System.IO;
 using System.Data.SqlClient;
+using System.Windows;
 
 namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 {
-    /// <summary>
-    /// Users can upload more documents or upload a document if they forgot as long as they know the name of the class they taught
-    /// </summary>
     public partial class SupportingDocs : Window
     {
         private string uploadedFilePath = null; // Store the uploaded file path
@@ -28,86 +15,53 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             InitializeComponent();
         }
 
-        // Event for uploading documents
-        private void UploadDocument_Click(object sender, RoutedEventArgs e)
+        // Method to get the Claims ID based on the class name
+        public int GetClaimsIDByClass(string classTaught)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Supported Documents|*.docx;*.xlsx;*.pdf"; // Only allow docx, xlsx, pdf
-            if (openFileDialog.ShowDialog() == true)
-            {
-                uploadedFilePath = openFileDialog.FileName; // Store the path
-                MessageBox.Show("Document uploaded successfully.");
-            }
-        }
-
-        // Event for submitting the document
-        private void SubmitButton_Click(object sender, RoutedEventArgs e)
-        {
-            string classTaught = ClassTaughtTextBox.Text;
-
-            // Ensure a document is uploaded
-            if (string.IsNullOrEmpty(uploadedFilePath))
-            {
-                MessageBox.Show("Please upload a supporting document.");
-                return;
-            }
-
-            // Check if the claim exists by class name
-            int claimID = GetClaimIDByClass(classTaught);
-            if (claimID == -1)
-            {
-                MessageBox.Show("No claim found for the given class.");
-                return;
-            }
-
-            // Save the document path to the database and update the Claims table
-            SaveSupportingDocument(claimID, uploadedFilePath);
-
-            // Clear the form after successful submission
-            ClearForm();
-        }
-
-        // Method to get the claim ID based on the class name
-        private int GetClaimIDByClass(string classTaught)
-        {
-            string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
-            string query = "SELECT ClaimID FROM Claims WHERE ClassTaught = @ClassTaught";
+            string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;";
+            string query = "SELECT ClaimsID FROM Claims WHERE ClassTaught = @ClassTaught";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(query, connection);
-                command.Parameters.AddWithValue("@ClassTaught", classTaught);
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@ClassTaught", classTaught);
 
-                try
-                {
-                    connection.Open();
-                    var result = command.ExecuteScalar();
-                    if (result != null)
+                    try
                     {
-                        return Convert.ToInt32(result); // Return the ClaimID
+                        connection.Open();
+                        var result = command.ExecuteScalar();
+                        if (result != null)
+                        {
+                            return Convert.ToInt32(result); // Return the ClaimsID
+                        }
                     }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error: " + ex.Message);
+                    catch (SqlException sqlEx)
+                    {
+                        MessageBox.Show("Database error: " + sqlEx.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error: " + ex.Message);
+                    }
                 }
             }
             return -1; // Return -1 if claim not found
         }
 
         // Method to save the supporting document to the database and update Claims table
-        private void SaveSupportingDocument(int claimID, string documentPath)
+        private void SaveSupportingDocument(int ClaimsID, string documentPath)
         {
-            string connectionString = "Data Source=hp820g4\\SQLEXPRESS;Initial Catalog=POE;Integrated Security=True;";
+            string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;";
 
             // Insert into SupportingDocuments table
             string insertQuery = @"INSERT INTO SupportingDocuments (ClaimsID, DocName, FilePath, SubmissionDate)
-                                   VALUES (@ClaimID, @DocName, @FilePath, @SubmissionDate)";
+                                   VALUES (@ClaimsID, @DocName, @FilePath, @SubmissionDate)";
 
             // Update the Claims table to reflect the new document path
             string updateQuery = @"UPDATE Claims
                                    SET SupportingDocumentPath = @FilePath
-                                   WHERE ClaimID = @ClaimID";
+                                   WHERE ClaimsID = @ClaimsID";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -116,20 +70,28 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                     connection.Open();
 
                     // First, insert the document into SupportingDocuments
-                    SqlCommand insertCommand = new SqlCommand(insertQuery, connection);
-                    insertCommand.Parameters.AddWithValue("@ClaimID", claimID);
-                    insertCommand.Parameters.AddWithValue("@DocName", Path.GetFileName(documentPath));
-                    insertCommand.Parameters.AddWithValue("@FilePath", documentPath);
-                    insertCommand.Parameters.AddWithValue("@SubmissionDate", DateTime.Now);
-                    insertCommand.ExecuteNonQuery();
+                    using (SqlCommand insertCommand = new SqlCommand(insertQuery, connection))
+                    {
+                        insertCommand.Parameters.AddWithValue("@ClaimsID", ClaimsID);
+                        insertCommand.Parameters.AddWithValue("@DocName", Path.GetFileName(documentPath));
+                        insertCommand.Parameters.AddWithValue("@FilePath", documentPath);
+                        insertCommand.Parameters.AddWithValue("@SubmissionDate", DateTime.Now);
+                        insertCommand.ExecuteNonQuery();
+                    }
 
                     // Then, update the Claims table to save the document path
-                    SqlCommand updateCommand = new SqlCommand(updateQuery, connection);
-                    updateCommand.Parameters.AddWithValue("@ClaimID", claimID);
-                    updateCommand.Parameters.AddWithValue("@FilePath", documentPath);
-                    updateCommand.ExecuteNonQuery();
+                    using (SqlCommand updateCommand = new SqlCommand(updateQuery, connection))
+                    {
+                        updateCommand.Parameters.AddWithValue("@ClaimsID", ClaimsID);
+                        updateCommand.Parameters.AddWithValue("@FilePath", documentPath);
+                        updateCommand.ExecuteNonQuery();
+                    }
 
                     MessageBox.Show("Supporting document submitted successfully!");
+                }
+                catch (SqlException sqlEx)
+                {
+                    MessageBox.Show("Database error: " + sqlEx.Message);
                 }
                 catch (Exception ex)
                 {
@@ -138,18 +100,54 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             }
         }
 
-        // Event for clearing the form (Cancel)
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        // Event handler for the Upload Document button
+        private void UploadDocument_Click(object sender, RoutedEventArgs e)
         {
-            ClearForm();
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Documents (*.pdf;*.doc;*.docx)|*.pdf;*.doc;*.docx|All files (*.*)|*.*",
+                Title = "Select a Document"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                uploadedFilePath = openFileDialog.FileName; // Store the file path
+                MessageBox.Show("Document uploaded: " + uploadedFilePath);
+            }
         }
 
-        // Helper method to clear the form
-        private void ClearForm()
+        // Event handler for the Submit button
+        private void SubmitButton_Click(object sender, RoutedEventArgs e)
         {
-            ClassTaughtTextBox.Clear();
-            uploadedFilePath = null;
-            MessageBox.Show("Form cleared.");
+            string classTaught = ClassTaughtTextBox.Text;
+
+            if (string.IsNullOrWhiteSpace(classTaught))
+            {
+                MessageBox.Show("Please enter a class taught.");
+                return;
+            }
+
+            if (uploadedFilePath == null)
+            {
+                MessageBox.Show("Please upload a document before submitting.");
+                return;
+            }
+
+            int ClaimsID = GetClaimsIDByClass(classTaught);
+            if (ClaimsID == -1)
+            {
+                MessageBox.Show("No claim found for the specified class.");
+                return;
+            }
+
+            SaveSupportingDocument(ClaimsID, uploadedFilePath);
+            this.Close(); // Close the window after submission
+        }
+
+        // Event handler for the Cancel button
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close(); // Close the window without doing anything
         }
     }
 }

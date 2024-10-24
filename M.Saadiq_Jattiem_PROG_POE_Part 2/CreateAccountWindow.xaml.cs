@@ -1,13 +1,14 @@
-﻿using System.Windows;
-using System;
+﻿using System;
 using System.Data.SqlClient;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 {
     /// <summary>
-    /// This window allows for users to create their account and have it stored into the database
+    /// This window allows for users to create their account and have it stored in the database.
     /// </summary>
     public partial class CreateAccountWindow : Window
     {
@@ -16,7 +17,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             InitializeComponent();
         }
 
-        //This method is called when the Create Account button is clicked and will save the users information (name,surname,email etc.) into the database once the button is clicked.
+        // This method is called when the Create Account button is clicked and will save the user's information (name, surname, email, etc.) into the database.
         public void CreateAccountButton_Click(object sender, RoutedEventArgs e)
         {
             // Get the values from the form
@@ -38,8 +39,12 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 
             try
             {
-                // Address of SQL server and database 
-                string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
+                // Hash the password before saving it
+                string passwordHash = HashPassword(password);
+
+                // Address of SQL server and database
+                string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Encrypt=False;";
+
 
                 // Establish connection
                 using (var con = new SqlConnection(connectionString))
@@ -47,10 +52,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                     // Open Connection
                     con.Open();
 
-
-                    string passwordHash = password;
-
-                    // SQL Query with all required fields, including email
+                    // SQL Query with all required fields
                     string query = "INSERT INTO AccountUser (FirstName, LastName, Email, PhoneNumber, PasswordHash, AccountType) " +
                                    "VALUES (@FirstName, @LastName, @Email, @PhoneNumber, @PasswordHash, @AccountType)";
 
@@ -59,7 +61,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                     {
                         cmd.Parameters.AddWithValue("@FirstName", firstName);
                         cmd.Parameters.AddWithValue("@LastName", lastName);
-                        cmd.Parameters.AddWithValue("@Email", email);  // Add the email parameter
+                        cmd.Parameters.AddWithValue("@Email", email);
                         cmd.Parameters.AddWithValue("@PhoneNumber", phoneNumber);
                         cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
                         cmd.Parameters.AddWithValue("@AccountType", role);
@@ -80,6 +82,24 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             catch (Exception ex)
             {
                 MessageBox.Show("An error occurred: " + ex.Message);
+            }
+        }
+
+        // Hash the password using SHA256
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256Hash = SHA256.Create())
+            {
+                // ComputeHash - returns byte array
+                byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                // Convert byte array to a string
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2"));  // Convert each byte to hex
+                }
+                return builder.ToString();
             }
         }
     }

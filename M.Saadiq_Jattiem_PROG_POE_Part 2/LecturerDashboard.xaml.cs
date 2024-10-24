@@ -19,7 +19,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
 {
     public partial class LecturerDashboard : Window
     {
-        private string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
+        string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Encrypt=False;";
         private DispatcherTimer timer;
 
         public LecturerDashboard()
@@ -62,7 +62,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
         // Method to load claim status into the ListView
         private void LoadClaimStatus()
         {
-            string query = "SELECT ClassTaught, TotalAmount, ClaimStatus FROM Claims"; // Adjust the query as necessary
+            string query = "SELECT ClassTaught, ClaimTotalAmount, ClaimStatus FROM Claims"; // Adjust the query as necessary
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {

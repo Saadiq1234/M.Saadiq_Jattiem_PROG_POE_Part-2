@@ -58,6 +58,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
         }
 
         // Event for submitting the claim
+        // Event for submitting the claim
         private void SubmitButton_Click(object sender, RoutedEventArgs e)
         {
             string classTaught = ClassTaughtTextBox.Text;
@@ -83,27 +84,28 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             }
 
             // Save the claim to the database
-            SaveClaimToDatabase(classTaught, numberOfSessions, totalAmount, uploadedFilePath);
+            double hourlyRate = 105; // Fixed hourly rate
+            SaveClaimToDatabase(classTaught, numberOfSessions, totalAmount, uploadedFilePath, hourlyRate);
 
             // Clear the form after successful submission
             ClearForm();
         }
 
         // Method to save claim details to the database
-        private void SaveClaimToDatabase(string classTaught, int sessions, double totalAmount, string documentPath)
+        private void SaveClaimToDatabase(string classTaught, int sessions, double totalAmount, string documentPath, double hourlyRate)
         {
-            string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Trust Server Certificate=True";
+            string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;TrustServerCertificate=True";
 
-            string query = @"INSERT INTO Claims (ClassTaught, NumberOfSessions, TotalAmount, SupportingDocumentPath)
-                     VALUES (@ClassTaught, @NumberOfSessions, @TotalAmount, @DocumentPath)";
+            string query = @"INSERT INTO Claims (ClassTaught, NoOfSessions, SupportingDocumentPath, HourlyRatePerSession)
+                     VALUES (@ClassTaught, @NumberOfSessions, @DocumentPath, @HourlyRate)";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 SqlCommand command = new SqlCommand(query, connection);
                 command.Parameters.AddWithValue("@ClassTaught", classTaught);
                 command.Parameters.AddWithValue("@NumberOfSessions", sessions);
-                command.Parameters.AddWithValue("@TotalAmount", totalAmount);
                 command.Parameters.AddWithValue("@DocumentPath", documentPath); // Store file path
+                command.Parameters.AddWithValue("@HourlyRate", hourlyRate); // Include the hourly rate
 
                 try
                 {
@@ -117,6 +119,8 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                 }
             }
         }
+
+
 
         // Event for clearing the form (Cancel)
         private void CancelButton_Click(object sender, RoutedEventArgs e)
