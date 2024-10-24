@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:M.Saadiq_Jattiem_PROG_POE_Part_2"
         mc:Ignorable="d"
        Title="Programme Coordinator Dashboard" Height="400" Width="600">
-    <Grid Background="#FF579ED4">
+    <Grid Background="Aquamarine">
         <!--Once a Programme Coordinator is logged in this is the window they will be directed to, where they can approve, reject or leave claims pending-->
         <TextBlock Text="Claims Overview" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,20,0,20"/>
 

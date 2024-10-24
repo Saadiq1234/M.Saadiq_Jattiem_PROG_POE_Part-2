@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Reflection.PortableExecutable;
-using System.Security.Claims;
 using System.Windows;
 
 namespace M.Saadiq_Jattiem_PROG_POE_Part_2
@@ -50,25 +48,28 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                 try
                 {
                     connection.Open();
+                    MessageBox.Show("Connection successful");
+
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        // Check for null values before accessing
-                        if (reader.IsDBNull(0) || reader.IsDBNull(1) || reader.IsDBNull(2) || reader.IsDBNull(3))
-                        {
-                            continue; // Skip the entry if any required field is null
-                        }
+                        int claimID = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
+                        string classTaught = reader.IsDBNull(1) ? "Unknown" : reader.GetString(1);
+                        decimal totalAmount = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2);
+                        string claimStatus = reader.IsDBNull(3) ? "Pending" : reader.GetString(3);
 
                         claims.Add(new Claim
                         {
-                            ClaimID = reader.GetInt32(0),
-                            ClassTaught = reader.GetString(1),
-                            TotalAmount = reader.GetDecimal(2),
-                            ClaimStatus = reader.GetString(3)
+                            ClaimID = claimID,
+                            ClassTaught = classTaught,
+                            TotalAmount = totalAmount,
+                            ClaimStatus = claimStatus
                         });
+
+                        // Debugging message to verify claim retrieval
+                        MessageBox.Show($"ClaimID: {claimID}, ClassTaught: {classTaught}, TotalAmount: {totalAmount}, Status: {claimStatus}");
                     }
 
-                    // Debugging information
                     MessageBox.Show($"Total claims retrieved: {claims.Count}");
                 }
                 catch (SqlException sqlEx)
@@ -87,7 +88,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
         private void UpdateClaimStatus(int claimID, string newStatus)
         {
             string connectionString = "Data Source=labG9AEB3\\sqlexpress01;Initial Catalog=POE;Integrated Security=True;Encrypt=False;";
-            string query = "UPDATE Claims SET ClaimStatus = @ClaimStatus WHERE ClaimsID = @ClaimID"; // Fixed the parameter name
+            string query = "UPDATE Claims SET ClaimStatus = @ClaimStatus WHERE ClaimsID = @ClaimID";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -98,9 +99,19 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                 try
                 {
                     connection.Open();
-                    command.ExecuteNonQuery();
-                    MessageBox.Show("Claim status updated successfully!");
-                    LoadClaims(); // Reload claims after updating
+                    // Execute the query and get the number of rows affected
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        MessageBox.Show("Claim status updated successfully!");
+                        LoadClaims(); // Reload claims after updating
+                    }
+                    else
+                    {
+                        // If no rows were affected, something went wrong
+                        MessageBox.Show("No rows were updated. Please check if the claim exists or if there are any constraints.");
+                    }
                 }
                 catch (SqlException sqlEx)
                 {
@@ -112,6 +123,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                 }
             }
         }
+
 
         // Approve button changes status of claims to approved
         private void ApproveButton_Click(object sender, RoutedEventArgs e)
@@ -126,7 +138,7 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
             }
         }
 
-        // Rejection button will change status to rejected
+        // Reject button will change status to rejected
         private void RejectButton_Click(object sender, RoutedEventArgs e)
         {
             if (ClaimsListView.SelectedItem is Claim selectedClaim)
@@ -138,53 +150,9 @@ namespace M.Saadiq_Jattiem_PROG_POE_Part_2
                 MessageBox.Show("Please select a claim to reject.");
             }
         }
-        while (reader.Read())
-{
-    int claimID = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
-        string classTaught = reader.IsDBNull(1) ? "Unknown" : reader.GetString(1);
-        decimal totalAmount = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2);
-        string claimStatus = reader.IsDBNull(3) ? "Pending" : reader.GetString(3);
 
-        claims.Add(new Claim
-    {
-        ClaimID = claimID,
-        ClassTaught = classTaught,
-        TotalAmount = totalAmount,
-        ClaimStatus = claimStatus
-    });
-}
-while (reader.Read())
-{
-    int claimID = reader.GetInt32(0);
-    string classTaught = reader.GetString(1);
-    decimal totalAmount = reader.GetDecimal(2);
-    string claimStatus = reader.GetString(3);
-
-    MessageBox.Show($"ClaimID: {claimID}, ClassTaught: {classTaught}, TotalAmount: {totalAmount}, Status: {claimStatus}");
-
-    claims.Add(new Claim
-    {
-        ClaimID = claimID,
-        ClassTaught = classTaught,
-        TotalAmount = totalAmount,
-        ClaimStatus = claimStatus
-    });
-}
-try
-{
-    connection.Open();
-    MessageBox.Show("Connection successful");
-    SqlDataReader reader = command.ExecuteReader();
-    // existing logic
-}
-catch (Exception ex)
-{
-    MessageBox.Show("Connection failed: " + ex.Message);
-}
-
-
-// Pending button will change status to pending
-private void PendingButton_Click(object sender, RoutedEventArgs e)
+        // Pending button will change status to pending
+        private void PendingButton_Click(object sender, RoutedEventArgs e)
         {
             if (ClaimsListView.SelectedItem is Claim selectedClaim)
             {
@@ -197,6 +165,7 @@ private void PendingButton_Click(object sender, RoutedEventArgs e)
         }
     }
 
+    // Claim class definition
     public class Claim
     {
         public int ClaimID { get; set; }

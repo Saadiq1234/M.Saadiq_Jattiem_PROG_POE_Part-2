@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:M.Saadiq_Jattiem_PROG_POE_Part_2"
         mc:Ignorable="d"
        Title="Submit Claim" Height="450" Width="500">
-    <Grid Background="#FF579ED4">
+    <Grid Background="Aquamarine">
         <!--Lecturers can upload their information for submission of their claims-->
         <!-- Class taught label and text box -->
         <TextBlock Text="Class Taught:" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,40,0,0"/>

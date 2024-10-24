@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:M.Saadiq_Jattiem_PROG_POE_Part_2"
         mc:Ignorable="d"
        Title="Create Account" Height="500" Width="400">
-    <Grid Background="#FF579ED4">
+    <Grid Background="Aquamarine">
         <!---This window will capture new user data for whether they are a lecturer or coordinator and save their account-->
         <TextBlock Text="Create Account" FontSize="20" HorizontalAlignment="Center" Margin="0,10,0,0"/>
 

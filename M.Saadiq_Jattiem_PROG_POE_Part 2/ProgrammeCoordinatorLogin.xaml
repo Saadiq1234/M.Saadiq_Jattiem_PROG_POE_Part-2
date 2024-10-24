@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:M.Saadiq_Jattiem_PROG_POE_Part_2"
         mc:Ignorable="d"
        Title="Programme Coordinator Login" Height="300" Width="400">
-    <Grid Background="#FF579ED4">
+    <Grid Background="Aquamarine">
         <!---Allows coordinators to login if they have an account-->
         <TextBlock Text="Programme Coordinator Login" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0"/>
 
